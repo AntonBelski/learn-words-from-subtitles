@@ -80,7 +80,7 @@ def count_words():
         elif word in unlearned_words:
             text_color = 'y'
         # length of the line below is 24
-        words_freq_list.append(' ' + text_color + word.ljust(17) + str(freq).ljust(3) + ' |')
+        words_freq_list.append(' ' + text_color + word.ljust(17) + str(freq).ljust(4) + '|')
 
     cols = 7
     # word_block_size length is 23,
@@ -170,7 +170,7 @@ def learn_words():
 def get_word_rating_from_csv(word):
     before_after_10_words = deque()
     is_word_found = False
-    with open('unigram_freq.csv') as csv_file:
+    with open('unigram_freq_v2.csv') as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
         for i, row in enumerate(csv_reader):
             curr_word_rating = [i, row[0]]
@@ -230,4 +230,3 @@ if __name__ == '__main__':
         count_words()
     elif answer in 'fFаА':
         find_word_rating()
-
