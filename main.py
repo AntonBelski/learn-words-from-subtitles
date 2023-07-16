@@ -21,19 +21,21 @@ colorful = {
 def add_colors_to_text(line):
     words_with_freq = line.split('|')
     if not words_with_freq:
-        return ''
+        return '', 0
     elif words_with_freq[0] and words_with_freq[0][0] == '-':
-        return colorful['-'] + words_with_freq[0]
+        return colorful['-'] + words_with_freq[0], 0
     colorful_line = [colorful['|'] + '|']
+    line_length = 1
     for word_block in words_with_freq:
         if not word_block:
             continue
         text_color = word_block[1]
         vertical_line = colorful['|'] + '|'
         colorful_block = colorful[text_color] + ' ' + word_block[2:] + vertical_line
+        line_length += len(word_block[2:]) + 2
         colorful_line.append(colorful_block)
 
-    return ''.join(colorful_line)
+    return ''.join(colorful_line), line_length
 
 
 def calculate_percentages_of_words(words_freq, learned_words):
@@ -98,10 +100,12 @@ def count_words():
             line.append(text_row)
         table.append(line)
     table.insert(0, [underline] * min([len(row) for row in table]))
+    last_row_length = 0
     for sub_table in zip(*table):
         for row in sub_table:
-            print(add_colors_to_text(row))
-    print(add_colors_to_text(underline))
+            colorful_row, last_row_length = add_colors_to_text(row)
+            print(colorful_row)
+    print(add_colors_to_text('-' * last_row_length)[0])
 
 
 def refresh_unlearned_words():
