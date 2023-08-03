@@ -50,20 +50,35 @@ def calculate_percentages_of_words(words_freq, learned_words):
     return known_words_percentage, known_unique_words_percentage
 
 
+def get_phrasal_verbs():
+    with open('phrasal_verbs.csv') as csv_file:
+        csv_reader = csv.reader(csv_file, delimiter=',')
+        return set([row[0] for row in csv_reader])
+
+
 def get_words_from_file(file_path):
     counter = Counter()
+    phrasal_verbs_set = get_phrasal_verbs()
+    all_words = []
     with open(file_path, 'r') as file:
         for line in file:
             filtered_line = re.sub('[^a-zA-Z]', ' ', line).lower()
             line_counter = Counter(filtered_line.split())
             counter.update(line_counter)
+            all_words.extend(filtered_line.split())
+    for start in range(len(all_words)):
+        for end in range(start, start + 3):
+            potential_phrasal_verb = ' '.join(all_words[start:end])
+            if potential_phrasal_verb in phrasal_verbs_set:
+                pass
+
     return counter
 
 
 def count_words():
     words_freq = get_words_from_file('words_source')
-    unlearned_words = get_words_from_file('vocabulary/unlearned')
-    learned_words = get_words_from_file('vocabulary/learned')
+    unlearned_words = get_words_from_file('vocabulary/unlearned.txt')
+    learned_words = get_words_from_file('vocabulary/learned.txt')
     percentages = calculate_percentages_of_words(words_freq, learned_words)
     known_words_percentage, known_unique_words_percentage = percentages
 
@@ -109,10 +124,10 @@ def count_words():
 
 
 def refresh_unlearned_words():
-    unlearned_words = get_words_from_file('vocabulary/unlearned')
-    learned_words = get_words_from_file('vocabulary/learned')
+    unlearned_words = get_words_from_file('vocabulary/unlearned.txt')
+    learned_words = get_words_from_file('vocabulary/learned.txt')
     new_words = []
-    with open('vocabulary/unlearned', 'a') as unlearned:
+    with open('vocabulary/unlearned.txt', 'a') as unlearned:
         for source in os.listdir('vocabulary/source'):
             source_words = get_words_from_file(f'vocabulary/source/{source}')
             for word in source_words:
@@ -121,14 +136,14 @@ def refresh_unlearned_words():
                     unlearned_words[word] = 1
                     new_words.append(word)
     colon = ":" if len(new_words) else ''
-    print(c.BLUE + f'Refresh unlearned words was successful, {len(new_words)} new words were added {colon}')
+    print(c.BLUE + f'Refresh unlearned.txt words was successful, {len(new_words)} new words were added {colon}')
     for word in new_words:
         print(c.CYAN + f' - {word}')
 
 
 def get_unlearned_words():
     words_freq = dict()
-    with open('vocabulary/unlearned', 'r') as file:
+    with open('vocabulary/unlearned.txt', 'r') as file:
         for line in file:
             word, reps = line.split()
             words_freq[word] = int(reps)
@@ -141,13 +156,13 @@ def learn_words():
     words_to_learn = random.sample(list(unlearned_words.keys()), k=k_words)
 
     if len(words_to_learn) == 0:
-        print(c.GREEN + 'Co Co Congratulations! You don\'t have unlearned words.')
+        print(c.GREEN + 'Co Co Congratulations! You don\'t have unlearned.txt words.')
         return
 
     open_browser = True
     browser = setup_webbrowser()
 
-    with open('vocabulary/learned', 'a') as learned_file:
+    with open('vocabulary/learned.txt', 'a') as learned_file:
         while words_to_learn:
             word = words_to_learn[-1]
             print(c.CYAN + 'Do you know the word ' + c.VIOLET + word + c.CYAN + '?')
@@ -165,7 +180,7 @@ def learn_words():
                 words_to_learn.pop()
             print()
 
-    with open('vocabulary/unlearned', 'w') as unlearned_file:
+    with open('vocabulary/unlearned.txt', 'w') as unlearned_file:
         for word, reps in unlearned_words.items():
             if reps != 5:
                 unlearned_file.write(word.ljust(25) + str(reps) + '\n')
@@ -192,11 +207,11 @@ def get_word_rating_from_csv(word):
 
 def find_word_rating():
     print(c.VIOLET + 'Enter the word you want to find the rating for:')
-    word = input().lower()
+    word = input().lower().strip()
     print()
 
-    unlearned_words = get_words_from_file('vocabulary/unlearned')
-    learned_words = get_words_from_file('vocabulary/learned')
+    unlearned_words = get_words_from_file('vocabulary/unlearned.txt')
+    learned_words = get_words_from_file('vocabulary/learned.txt')
     words_around = get_word_rating_from_csv(word)
 
     if len(words_around) < 21:
